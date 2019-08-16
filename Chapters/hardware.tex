@@ -1,0 +1,42 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
+\section{Introduction to MEC}
+Talk about what MEC is
+
+\section{Microwave Kinetic Inductance Detectors}
+\subsection{Theory}
+\subsection{Performance in MEC}
+
+\section{Cryostat}
+The Microwave Kinetic Inductance Detector (MKID) array is housed inside a cryogenic fridge, HPD ADR Model 102. The array operates at 90 mK.
+
+\section{Microwave Wiring}
+\input{Chapters/flexcables.tex}
+
+\section{Optical Design}
+
+\section{Readout Electronics and Hardware Interface}
+\label{sec:readout_electronics}
+The readout for MEC is based on the ARCONS readout, which is detailed in \textcite{McHugh_2012} and is identical to the DARKNESS readout detailed in \textcite{Strader_2016}. The ARCONS readout uses eight ROACH (Reconfigurable Open Architecture Computing Hardware) boards produced by the Collaboration for Astronomy Signal Processing and Electronics Research (CASPER). Each read out 256 pixels in 512 MHz of bandwidth. The MEC readout employs twenty ROACH2 boards that connect to ADC/DAC and RF/IF boards designed at Fermilab. Each set of boards reads out 1024 pixels in 2 GHz of bandwidth. Each Roach2 houses a Virtex6 FPGA, which processes and channelizes the signal from the ADC using a scaled up version of the ARCONS firmware. This firmware is written in Simulink and is compiled using the Xilinx System Generator. The ADC/DAC board houses a Virtex7 FPGA with firmware written using Xilinx Vivado. The Roach2 and ADC/DAC board are connected by two Z-Dok connectors. One of the Z-Dok pins allows the ADC/DAC firmware to communicates with the ROACH2 firmware with SPI (Serial Peripheral Interface). The ADC/DAC firmware employs a Xilinx MicroBlaze soft microprocessor core to run a C program which accepts and executes commands from the ROACH2. The ROACH2 boards were developed by CASPER for general astronomical signal processing and the RF/IF and ADC/DAC boards have been developed at Fermilab specifically for the MKID arrays developed by UCSB. 
+
+\begin{figure}[!t] 
+  \includegraphics[width=\textwidth]{Readout.PNG}
+  \caption[Firmware block diagram for MEC readout boards]{Firmware block diagram for MEC readout boards. This diagram is for 1 set of boards which can readout 1024 pixels at a time.}
+  \label{fig:readout}
+\end{figure}
+
+The hardware interface uses the updated Casper library (casperfpga) for the ROACH2 boards. The ROACH2 boards are on a private LAN network as moderated by the network switch. We run all readout preprocessing software on the MEC data server, however, any computer (with the required Python libraries) that is connected to the LAN can perform this task. Each ROACH2 board boots up with an operating system and file system stored in Flash memory and runs a TCP BORPH server (provided by CASPER) to decipher commands. The firmware for the ADC/DAC board is initially loaded by a USB to JTAG interface and is stored on flash memory. The next time the board is booted it will load the firmware from memory automatically. We use NTP/PTP to sync the clocks for each ROACH2 board. A Telnet command programs the ROACH2's FPGA with the firmware.
+
+The initial setup defines the frequency comb that probes the resonators. Our python software computes the optimum frequency comb and sends it to the ROACH2, which then gives it to the ADC/DAC board via the SPI connection, to be stored in DDR3. This is then played to the DAC in a loop while the system runs. The signal is passed through the RF/IF board where an IQ mixer up-converts the signal to the right frequency range (4 to 8 GHz) using a local oscillator. After traveling through the cryostat, MKID array, and HEMTs the RF/IF board mixes down the returning signal to baseband where it is digitized by the ADC. Then the Virtex7 on the ADC/DAC board transmits the signal to the ROACH2 over the Z-Doks. The ROACH2 firmware processes the signal, performing the following actions:
+\begin{enumerate}
+    \item Separate the comb of frequencies into individual pixel frequencies using an FFT (Fast Fourier Transform) and Direct digital conversion
+    \item Sample the phase of each resonator's signal every microsecond
+    \item Run a pixel-wise unique optimal filter over each pixel's phase signal
+    \item Trigger on photon events and store photon packets in buffer
+    \item Send buffer to disk every 0.5 millisecond (or faster if full) over 1-Gbit Ethernet via UDP
+\end{enumerate}
+
+The photon packets are 64 bit words with the following breakdown: 10 bit x-coordinate, 10 bit y-coordinate, 8 bit timestamp, 18 bit wavelength, 18 bit baseline phase. A C program on the data server collects the bundles of photon packets sent from the ROACH2 boards and writes them to disk as observation files. Additionally, it histograms the photons into images for real time display. 
+
+\end{document}

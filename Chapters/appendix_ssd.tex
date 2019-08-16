@@ -1,0 +1,53 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+\renewcommand{\theequation}{A\arabic{equation}}
+
+We derive here the noise of a long ($t_\mathrm{exp} \gg \tau_s$) exposure subject to speckle statistics.  This is not simply photon shot noise, but arises due to the fluctuations of the modified Rician itself.  We consider a modified Rician parametrized by $I_c$ and $I_s$ with an exponential decorrelation time $\tau_s$.  The basic statistics of the distribution are
+\begin{equation}
+    \langle I \rangle = I_c + I_s
+\end{equation}
+\begin{equation}
+    \sigma^2_I = \langle I^2 \rangle - \langle I \rangle^2 = I_s^2 + 2 I_c I_s
+\end{equation}
+\begin{equation}
+    \langle (I_i - \langle I \rangle) (I_j - \langle I \rangle)  \rangle = \sigma^2_I \exp \left[ -\frac{|t_i - t_j|}{\tau_s} \right] .
+\end{equation}
+where brackets, $\langle \rangle$, denote an ensemble average.
+
+We wish to compute the variance of the mean intensity measured over a finite time interval $T_{\rm tot}$, which we divide into $N$ subintervals, each of length $\delta t$.
+\begin{equation}
+    \overline{I} = \frac{1}{N} \sum_i I_i .
+\end{equation}
+Here, the overbar denotes a temporal average. The variance is 
+\begin{align}
+    \langle \overline{I}^2 \rangle - \langle \overline{I} \rangle^2 &= \frac{1}{N^2} \bigg \langle \sum_i \sum_j I_i I_j \bigg \rangle - \frac{1}{N^2} \bigg \langle \sum_i I_i \bigg \rangle^2 \\
+    &= \frac{1}{N^2} \bigg \langle \sum_i \sum_j \left( I_i - \langle I \rangle \right) \left( I_j - \langle I \rangle \right) \bigg \rangle \\
+    &= \frac{\sigma^2_I}{N^2} \sum_i \sum_j \exp \left[ - \frac{|t_i - t_j|}{\tau_s} \right].
+\end{align}
+
+Now we will set $t_i = i \delta t$.  For the third step below, we use $\delta t/\tau_s \ll 1$. More generally, we take $\delta t \rightarrow 0$, $N \rightarrow \infty$.
+\begin{align}
+    \frac{1}{N^2} \sum_i \sum_j \exp \left[ - \frac{|t_i - t_j|}{\tau_s} \right] &= \frac{1}{N^2} \sum_i \sum_j \exp \left[ - \frac{|i - j|\delta t}{\tau_s} \right] \\
+    &= \frac{1}{N^2} \sum_{i=0}^{N-1} \left( \sum_{j=0}^{N-i-1} \exp \left[ -\frac{j\delta t}{\tau_s}\right] + \sum_{j=0}^{i} \exp \left[ -\frac{j\delta t}{\tau_s}\right] - 1\right)\\
+    &= \frac{1}{N^2} \sum_{i=0}^{N-1} \left( \frac{\tau_s}{\delta t} \left(2 - \exp \left[ -\frac{(N - i) \delta t}{\tau_s} \right] - \exp \left[ -\frac{(i + 1) \delta t}{\tau_s} \right] \right) - 1 \right)\\
+    &= \frac{2 \tau_s}{N \delta t}  - \frac{2 \tau_s}{N \delta t} \frac{1}{N} \left(\sum_{i=1}^N \exp \left[ -\frac{i \delta t}{\tau_s} \right] \right) - \frac{1}{N} \\
+    &= \frac{2 \tau_s}{N \delta t}  - 2 \left(\frac{\tau_s}{N \delta t} \right)^2 \left(1 - \exp \left[ -\frac{(N + 1) \delta t}{\tau_s} \right] \right) + \frac{2\tau_s}{N^2 \delta t} - \frac{1}{N} . 
+\end{align}
+Taking $N \rightarrow \infty$, $\delta t \rightarrow 0$, and $N \delta t = T_{\rm tot}$, we have
+\begin{align}
+    \langle \overline{I}^2 \rangle - \langle \overline{I} \rangle^2 &= \left( \frac{2 \tau_s}{T_{\rm tot}}  - 2 \left(\frac{\tau_s}{T_{\rm tot}} \right)^2 \left(1 - \exp \left[ -\frac{T_{\rm tot}}{\tau_s} \right] \right) \right) \sigma^2_I \\
+    &= \left( \frac{2 \tau_s}{T_{\rm tot}}  - 2 \left(\frac{\tau_s}{T_{\rm tot}} \right)^2 \left(1 - \exp \left[ -\frac{T_{\rm tot}}{\tau_s} \right] \right) \right) \left( I_s^2 + 2 I_c I_s \right).
+    \label{eq:mr_phot_limit}
+\end{align}
+In the limit of a very short integration, $T_{\rm tot} \ll \tau_s$, the prefactor is unity (as expected).  For an integration time much longer than the decorrelation time, $T_{\rm tot} \gg \tau_s$ (as is more typical), Equation \eqref{eq:mr_phot_limit} simplifies to
+\begin{align}
+    \langle \overline{I}^2 \rangle - \langle \overline{I} \rangle^2 &\approx \left( \frac{2 \tau_s}{T_{\rm tot}} \right) \left( I_s^2 + 2 I_c I_s \right).
+    \label{eq:mr_phot_limit_simple}
+\end{align}
+Assuming $2 I_s \tau_s \gg 1$ (the inter-photon arrival time from the speckle field is much shorter than the decorrelation time $\tau_s$), Equation \eqref{eq:mr_phot_limit} dominates over simple shot noise $\sigma^2 = (I_c + I_s)/T_{\rm tot}$.  Interestingly, setting the number of independent realizations of the modified Rician equal to $T_{\rm tot}/\tau_s$ would miss the factor of two in Equation \eqref{eq:mr_phot_limit_simple}.  Adding shot noise back in, assuming $T_{\rm tot} \gg \tau_s$, and including a component $I_p$ incoherent with $I_c$ and $I_s$, we have
+\begin{equation}
+    \sigma^2_{I, \rm tot} \approx \frac{2\tau_s \left( I_s^2 + 2 I_c I_s \right) + I_c + I_s + I_p}{T_{\rm tot}}.
+\end{equation}
+
+
+\end{document}

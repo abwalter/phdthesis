@@ -29,7 +29,7 @@
 \ProcessOptions
 
 % CHOOSING THE TYPE SIZE:
-\input uct1\@ptsize.clo\relax
+\input sty/uct1\@ptsize.clo\relax
 
 %    ****************************************
 %    *            Some Definitions          *
